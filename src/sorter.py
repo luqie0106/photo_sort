@@ -4,15 +4,17 @@ from pathlib import Path
 
 from config import SortConfig
 from detector import YoloDetector
+from exif_reader import ExifReader
 
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".heic"}
 
 
 class AlbumSorter:
-    def __init__(self, config: SortConfig, detector: YoloDetector) -> None:
+    def __init__(self, config: SortConfig, detector: YoloDetector, exif_reader: ExifReader | None = None) -> None:
         self.config = config
         self.detector = detector
+        self.exif_reader = exif_reader or ExifReader()
 
     def sort(self) -> dict[str, int]:
         summary: Counter[str] = Counter()
@@ -28,7 +30,7 @@ class AlbumSorter:
             labels = self.detector.predict_labels(image_path)
             category = labels[0] if labels else self.config.unknown_bucket
 
-            target_dir = self.config.output_dir / category
+            target_dir = self._build_target_dir(category=category, image_path=image_path)
             target_dir.mkdir(parents=True, exist_ok=True)
             target_file = target_dir / image_path.name
 
@@ -47,3 +49,21 @@ class AlbumSorter:
             return True
         except ValueError:
             return False
+
+    def _build_target_dir(self, category: str, image_path: Path) -> Path:
+        base_dir = self.config.output_dir / category
+        if category not in self.config.scenic_categories:
+            return base_dir
+
+        metadata = self.exif_reader.read(image_path)
+        camera = self._safe_dir_name(metadata.camera_model or self.config.unknown_camera_bucket)
+        lens = self._safe_dir_name(metadata.lens_model or self.config.unknown_lens_bucket)
+        return base_dir / camera / lens
+
+    @staticmethod
+    def _safe_dir_name(name: str) -> str:
+        invalid_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
+        clean_name = name
+        for char in invalid_chars:
+            clean_name = clean_name.replace(char, "_")
+        return clean_name.strip() or "unknown"
