@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo-sort"
+version = "0.1.0"
+description = "Sort photo albums by detected YOLO labels"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "ultralytics>=8.3.0",
+]
+
+[project.scripts]
+photo-sort = "cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["cli", "config", "detector", "sorter", "gui", "model_store"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
