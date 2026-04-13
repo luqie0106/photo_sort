@@ -13,3 +13,5 @@ class SortConfig:
     scenic_categories: tuple[str, ...] = ("scenery",)
     unknown_camera_bucket: str = "unknown_camera"
     unknown_lens_bucket: str = "unknown_lens"
+    jpeg_xl_bucket: str = "jpeg-xl"
+    recursive_scan: bool = False

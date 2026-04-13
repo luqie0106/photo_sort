@@ -13,6 +13,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default="yolo26n.pt", help="YOLO model file or model name")
     parser.add_argument("--conf", type=float, default=0.35, help="Confidence threshold")
     parser.add_argument("--move", action="store_true", help="Move files instead of copying")
+    parser.add_argument("--recursive", action="store_true", help="Recursively process nested subfolders")
     parser.add_argument("--unknown-bucket", default="unknown", help="Folder name for unmatched images")
     return parser.parse_args()
 
@@ -26,6 +27,7 @@ def main() -> None:
         confidence=args.conf,
         copy_mode=not args.move,
         unknown_bucket=args.unknown_bucket,
+        recursive_scan=args.recursive,
     )
 
     detector = YoloDetector(model_name=config.model_name, confidence=config.confidence)

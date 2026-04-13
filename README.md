@@ -7,6 +7,9 @@
 - 递归扫描源目录中的常见图片格式（jpg/png/webp/bmp/heic）。
 - 使用 YOLO 检测图片目标并按首个标签分类。
 - 对 `scenery` 类别图片，按 EXIF 自动细分到 `scenery/相机型号/镜头型号/`。
+- 支持 `.jxl`，若模型无法识别则自动归类到 `jpeg-xl/`。
+- 仅处理所选目录的一级文件，子文件夹内内容不会被归类处理。
+- GUI 中可勾选“递归处理子目录”来开启子目录归类。
 - 支持复制模式（默认）和移动模式。
 - 未检测到目标时进入 `unknown` 文件夹（可自定义）。
 - 首次运行会自动下载 `yolo26n.pt` 到项目根目录，后续复用。
@@ -44,6 +47,12 @@ cp /your/model/path/yolo26n.pt /Users/hualaiwu/Documents/photo_sort/yolo26n.pt
 
 ```bash
 photo-sort /path/to/source_album /path/to/output_album --model yolo26n.pt --conf 0.35
+```
+
+开启递归处理子目录：
+
+```bash
+photo-sort /path/to/source_album /path/to/output_album --recursive
 ```
 
 使用移动模式：

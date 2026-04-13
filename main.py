@@ -32,6 +32,14 @@ def _prompt_optional_float(prompt: str, default: float) -> float:
         return default
 
 
+def _prompt_yes_no(prompt: str, default: bool = False) -> bool:
+    default_text = "y" if default else "n"
+    raw = input(f"{prompt} (y/n, 默认{default_text}): ").strip().lower()
+    if not raw:
+        return default
+    return raw in {"y", "yes"}
+
+
 def run_console() -> None:
     _ensure_src_on_path()
     sort_config = importlib.import_module("config").SortConfig
@@ -44,6 +52,7 @@ def run_console() -> None:
     confidence = _prompt_optional_float("置信度(默认0.35): ", 0.35)
     unknown_bucket = input("未识别目录名(默认unknown): ").strip() or "unknown"
     copy_mode = (input("处理方式 copy/move (默认copy): ").strip().lower() or "copy") != "move"
+    recursive_scan = _prompt_yes_no("是否递归处理子目录", default=False)
 
     config = sort_config(
         source_dir=source_dir,
@@ -52,6 +61,7 @@ def run_console() -> None:
         confidence=confidence,
         copy_mode=copy_mode,
         unknown_bucket=unknown_bucket,
+        recursive_scan=recursive_scan,
     )
 
     try:

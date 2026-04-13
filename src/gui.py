@@ -19,6 +19,7 @@ class PhotoSortGUI:
         self.conf_var = tk.StringVar(value="0.35")
         self.mode_var = tk.StringVar(value="copy")
         self.unknown_var = tk.StringVar(value="unknown")
+        self.recursive_var = tk.BooleanVar(value=False)
 
         self._build_ui()
 
@@ -45,6 +46,7 @@ class PhotoSortGUI:
         ttk.Entry(options, textvariable=self.unknown_var, width=14).pack(side=tk.LEFT, padx=(8, 16))
         ttk.Radiobutton(options, text="复制", variable=self.mode_var, value="copy").pack(side=tk.LEFT)
         ttk.Radiobutton(options, text="移动", variable=self.mode_var, value="move").pack(side=tk.LEFT, padx=(8, 0))
+        ttk.Checkbutton(options, text="递归处理子目录", variable=self.recursive_var).pack(side=tk.LEFT, padx=(16, 0))
 
         self.run_button = ttk.Button(container, text="开始整理", command=self._run_sort)
         self.run_button.grid(row=7, column=0, sticky="w", pady=(14, 0))
@@ -93,6 +95,7 @@ class PhotoSortGUI:
                 confidence=confidence,
                 copy_mode=self.mode_var.get() == "copy",
                 unknown_bucket=self.unknown_var.get().strip() or "unknown",
+                recursive_scan=self.recursive_var.get(),
             )
             summary, model_path = self._sort_once(config)
             self._append_log(f"模型路径: {model_path}\n")
@@ -119,6 +122,7 @@ class PhotoSortGUI:
                 confidence=confidence,
                 copy_mode=self.mode_var.get() == "copy",
                 unknown_bucket=self.unknown_var.get().strip() or "unknown",
+                recursive_scan=self.recursive_var.get(),
             )
             summary, model_path = self._sort_once(retry_config)
             self._append_log(f"模型路径: {model_path}\n")

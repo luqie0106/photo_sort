@@ -8,6 +8,7 @@ from exif_reader import ExifReader
 
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".heic"}
+JXL_EXTENSION = ".jxl"
 
 
 class AlbumSorter:
@@ -20,15 +21,19 @@ class AlbumSorter:
         summary: Counter[str] = Counter()
         self.config.output_dir.mkdir(parents=True, exist_ok=True)
 
-        for image_path in sorted(self.config.source_dir.rglob("*")):
+        candidate_paths = self.config.source_dir.rglob("*") if self.config.recursive_scan else self.config.source_dir.iterdir()
+        for image_path in sorted(candidate_paths):
             if self._is_inside_output_dir(image_path):
                 continue
 
-            if not image_path.is_file() or image_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            if not image_path.is_file():
                 continue
 
-            labels = self.detector.predict_labels(image_path)
-            category = labels[0] if labels else self.config.unknown_bucket
+            suffix = image_path.suffix.lower()
+            if suffix not in SUPPORTED_EXTENSIONS and suffix != JXL_EXTENSION:
+                continue
+
+            category = self._resolve_category(image_path=image_path, suffix=suffix)
 
             target_dir = self._build_target_dir(category=category, image_path=image_path)
             target_dir.mkdir(parents=True, exist_ok=True)
@@ -42,6 +47,20 @@ class AlbumSorter:
             summary[category] += 1
 
         return dict(summary)
+
+    def _resolve_category(self, image_path: Path, suffix: str) -> str:
+        try:
+            labels = self.detector.predict_labels(image_path)
+        except Exception:
+            if suffix == JXL_EXTENSION:
+                return self.config.jpeg_xl_bucket
+            return self.config.unknown_bucket
+
+        if labels:
+            return labels[0]
+        if suffix == JXL_EXTENSION:
+            return self.config.jpeg_xl_bucket
+        return self.config.unknown_bucket
 
     def _is_inside_output_dir(self, file_path: Path) -> bool:
         try:
